@@ -1,7 +1,5 @@
 package net.codestudent.main;
 
-import javax.swing.*;
-
 public class Player extends Character{
 
     //Integers чтобы хранить кол-во улучшений в каждой ветке

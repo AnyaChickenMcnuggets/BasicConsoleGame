@@ -8,8 +8,11 @@ public class GameLogic {
 
     public static boolean isRunning;
 
+    //типы случайных событий
+    public enum Encounter { BATTLE, REST, SHOP }
+
     //случайные события
-    public static String[] encounters = {"Сражение", "Сражение", "Сражение", "Отдых", "Отдых"};
+    public static Encounter[] encounters = {Encounter.BATTLE, Encounter.BATTLE, Encounter.BATTLE, Encounter.REST, Encounter.REST};
 
     //имена врагов
     public static String[] enemies = {"Огр", "Огр", "Гоблин", "Гоблин", "Агрессивный Камень"};
@@ -132,11 +135,11 @@ public class GameLogic {
             enemies[3] = "Стая Волков";
             enemies[4] = "Безглавый Рыцарь";
             //Смена случайных событий
-            encounters[0] = "Сражение";
-            encounters[1] = "Сражение";
-            encounters[2] = "Сражение";
-            encounters[3] = "Отдых";
-            encounters[4] = "Подозрительный Странник";
+            encounters[0] = Encounter.BATTLE;
+            encounters[1] = Encounter.BATTLE;
+            encounters[2] = Encounter.BATTLE;
+            encounters[3] = Encounter.REST;
+            encounters[4] = Encounter.SHOP; //Подозрительный Странник
             //Полное лечений Героя
             //player.hp = player.maxHp;
         }else if (player.lvl >=3 && act == 2){
@@ -156,11 +159,11 @@ public class GameLogic {
             enemies[3] = "Верховный Вампир";
             enemies[4] = "Кровавая Жижа";
             //Смена случайных событий
-            encounters[0] = "Сражение";
-            encounters[1] = "Сражение";
-            encounters[2] = "Сражение";
-            encounters[3] = "Отдых";
-            encounters[4] = "Подозрительный Гоблин";
+            encounters[0] = Encounter.BATTLE;
+            encounters[1] = Encounter.BATTLE;
+            encounters[2] = Encounter.BATTLE;
+            encounters[3] = Encounter.REST;
+            encounters[4] = Encounter.SHOP; //Подозрительный Гоблин
             //Полное лечений Героя
             //player.hp = player.maxHp;
         }else if (player.lvl >=4     && act == 3){
@@ -186,12 +189,10 @@ public class GameLogic {
         //Случайное число между 0 и кол-вом случайных событий
         int encounter = (int) (Math.random()* encounters.length);
         //Вызов методов событий
-        if (encounters[encounter].equals("Сражение")) {
-            randomBattle();
-        }else if (encounters[encounter].equals("Отдых")) {
-            takeRest();
-        }else {
-            shop();
+        switch (encounters[encounter]) {
+            case BATTLE -> randomBattle();
+            case REST -> takeRest();
+            case SHOP -> shop();
         }
     }
 
