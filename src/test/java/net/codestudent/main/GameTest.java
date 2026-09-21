@@ -2,76 +2,53 @@ package net.codestudent.main;
 
 import org.junit.jupiter.api.Test;
 
+import java.nio.file.Path;
+import java.util.Random;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class GameTest {
 
     @Test
-    void checkXPLevelsUpWhenXpReachesMax() {
-        ScriptedConsole console = new ScriptedConsole()
-                .withInt(1)  // initial chooseTrait on construction
-                .withInt(2); // chooseTrait triggered by lvlUP
-        Game game = new Game(console);
+    void checkLevelUpAdvancesLevelAndGrantsATalent() {
+        ScriptedConsole console = new ScriptedConsole().withInt(1); // Might at tier 0
+        Game game = new Game(console, new Dice(new Random()));
         game.player = new Player("Hero", console);
-        game.player.xp = game.player.maxXP; // 15
+        game.player.xp = game.player.maxXP; // 20
 
-        game.checkXP();
+        game.checkLevelUp();
 
         assertEquals(2, game.player.lvl);
-        assertEquals(25, game.player.maxXP);
+        assertEquals(30, game.player.maxXP);
         assertEquals(0, game.player.xp);
+        assertEquals(1, game.player.skillTier);
+        assertEquals(SkillNode.Branch.MIGHT, game.player.branch);
+        assertTrue(game.player.unlockedSkills.contains(SkillTree.POWER_STRIKE));
     }
 
     @Test
-    void checkActAdvancesFromFirstToSecondAct() {
-        ScriptedConsole console = new ScriptedConsole().withInt(1);
-        Game game = new Game(console);
+    void checkLevelUpDoesNothingBelowThreshold() {
+        ScriptedConsole console = new ScriptedConsole().withInt(2); // Guard at tier 0
+        Game game = new Game(console, new Dice(new Random()));
         game.player = new Player("Hero", console);
-        game.player.lvl = 2;
+        // xp stays at 0, well below maxXP
 
-        game.checkAct();
+        game.checkLevelUp();
 
-        assertEquals(2, game.actNumber);
-        assertEquals("Призрачная Низина", game.currentAct.place());
+        assertEquals(1, game.player.lvl);
+        assertEquals(0, game.player.skillTier);
     }
 
     @Test
-    void checkActAdvancesFromSecondToThirdAct() {
-        ScriptedConsole console = new ScriptedConsole().withInt(1);
-        Game game = new Game(console);
-        game.player = new Player("Hero", console);
-        game.player.lvl = 3;
-        game.actNumber = 2;
-        game.currentAct = new Act("Призрачная Низина", new String[0], new Encounter[0]);
-
-        game.checkAct();
-
-        assertEquals(3, game.actNumber);
-        assertEquals("Кровавый Перевал", game.currentAct.place());
-    }
-
-    @Test
-    void checkActDoesNothingBelowThreshold() {
-        ScriptedConsole console = new ScriptedConsole().withInt(1);
-        Game game = new Game(console);
-        game.player = new Player("Hero", console);
-        // lvl stays 1, actNumber stays 1: threshold not met
-
-        game.checkAct();
-
-        assertEquals(1, game.actNumber);
-        assertEquals("Бесконечные Горы", game.currentAct.place());
-    }
-
-    @Test
-    void startRunsThroughNameEntryAndTraitChoiceThenExits() {
+    void startRunsThroughNameEntryAndTraitChoiceThenExits(@org.junit.jupiter.api.io.TempDir Path tempDir) {
         ScriptedConsole console = new ScriptedConsole()
                 .withLine("TestHero")
                 .withInt(1)  // confirm name
-                .withInt(2)  // initial chooseTrait
-                .withInt(3); // exit at main menu
-        Game game = new Game(console);
+                .withInt(1)  // pick Might at tier 0
+                .withInt(5); // quit at main menu
+        Game game = new Game(console, new Dice(new Random()), tempDir.resolve("save.properties"));
 
         game.start();
 

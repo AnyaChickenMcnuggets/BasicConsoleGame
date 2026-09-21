@@ -43,7 +43,7 @@ public class TerminalConsole implements Console {
                 input = Integer.parseInt(scanner.next());
             } catch (Exception e) {
                 input = -1;
-                out.println("Пожалуйста введите число!");
+                out.println("Please enter a number!");
             }
         } while (input < 1 || input > maxChoices);
         return input;
@@ -56,7 +56,7 @@ public class TerminalConsole implements Console {
 
     @Override
     public void waitForContinue() {
-        out.println("\nВведите что-нибудь чтобы продолжить...");
+        out.println("\nPress enter to continue...");
         scanner.next();
     }
 }

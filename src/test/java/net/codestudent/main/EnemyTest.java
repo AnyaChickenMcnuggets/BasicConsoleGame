@@ -2,31 +2,34 @@ package net.codestudent.main;
 
 import org.junit.jupiter.api.Test;
 
+import java.util.Random;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class EnemyTest {
+class EnemyTest {
 
     @Test
-    void constructorSetsStatsWithinExpectedRange() {
-        int playerLvl = 3;
+    void constructorRollsHitPointsFromTemplate() {
+        Dice dice = new Dice(new Random());
         for (int i = 0; i < 100; i++) {
-            Enemy enemy = new Enemy("Test", playerLvl);
-            assertTrue(enemy.maxHp >= playerLvl && enemy.maxHp < playerLvl + 10,
+            Enemy enemy = new Enemy(Bestiary.MARSH_WOLF, dice);
+            DiceExpr hitDice = Bestiary.MARSH_WOLF.hitDice();
+            int min = hitDice.count() + hitDice.modifier();
+            int max = hitDice.count() * hitDice.sides() + hitDice.modifier();
+            assertTrue(enemy.maxHp >= min && enemy.maxHp <= max,
                     "maxHp out of range: " + enemy.maxHp);
-            assertEquals(enemy.maxHp, enemy.hp, "hp should start equal to maxHp");
-            assertTrue(enemy.xp >= playerLvl && enemy.xp < 2 * playerLvl + 2,
-                    "xp out of range: " + enemy.xp);
-            assertEquals("Test", enemy.name);
+            assertEquals(enemy.maxHp, enemy.hp);
+            assertEquals(Bestiary.MARSH_WOLF.name(), enemy.name);
+            assertEquals(Bestiary.MARSH_WOLF.xpReward(), enemy.xp);
         }
     }
 
     @Test
-    void attackAndDefendAreNeverNegative() {
-        Enemy enemy = new Enemy("Test", 3);
-        for (int i = 0; i < 200; i++) {
-            assertTrue(enemy.attack() >= 0);
-            assertTrue(enemy.defend() >= 0);
-        }
+    void combatStatsComeStraightFromTemplate() {
+        Enemy enemy = new Enemy(Bestiary.HIGHWAY_BANDIT, new Dice(new Random()));
+        assertEquals(Bestiary.HIGHWAY_BANDIT.armorClass(), enemy.armorClass());
+        assertEquals(Bestiary.HIGHWAY_BANDIT.attackBonus(), enemy.attackBonus());
+        assertEquals(Bestiary.HIGHWAY_BANDIT.damageDice(), enemy.damageDice());
     }
 }
