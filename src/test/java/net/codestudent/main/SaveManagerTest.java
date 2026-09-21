@@ -15,7 +15,9 @@ class SaveManagerTest {
 
     @Test
     void saveThenLoadRestoresPlayerState() {
-        ScriptedConsole console = new ScriptedConsole().withInt(1); // Might at tier 0
+        ScriptedConsole console = new ScriptedConsole()
+                .withInt(1).withInt(1).withInt(1).withInt(1).withInt(1) // ability score assignment
+                .withInt(1); // Might at tier 0
         Player player = new Player("Hero", console);
         player.gold = 99;
         player.xp = 5;
@@ -40,6 +42,12 @@ class SaveManagerTest {
         assertEquals(player.lvl, loaded.lvl);
         assertEquals(player.maxXP, loaded.maxXP);
         assertEquals(player.restsLeft, loaded.restsLeft);
+        assertEquals(player.str, loaded.str);
+        assertEquals(player.dex, loaded.dex);
+        assertEquals(player.con, loaded.con);
+        assertEquals(player.intel, loaded.intel);
+        assertEquals(player.wis, loaded.wis);
+        assertEquals(player.cha, loaded.cha);
         assertEquals(player.branch, loaded.branch);
         assertEquals(player.skillTier, loaded.skillTier);
         assertEquals(player.unlockedSkills, loaded.unlockedSkills);

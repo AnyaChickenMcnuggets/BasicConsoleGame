@@ -14,6 +14,7 @@ class QuestTest {
     @Test
     void acceptingQuestFromNpcMarksItActive() {
         ScriptedConsole console = new ScriptedConsole()
+                .withInt(1).withInt(1).withInt(1).withInt(1).withInt(1) // ability score assignment
                 .withInt(1)  // Might at tier 0
                 .withInt(1); // accept the quest
         Game game = new Game(console, new Dice(new Random()));
@@ -27,7 +28,8 @@ class QuestTest {
 
     @Test
     void killsAgainstTargetAdvanceActiveQuestOnly() {
-        ScriptedConsole console = new ScriptedConsole().withInt(1);
+        ScriptedConsole console = new ScriptedConsole()
+                .withInt(1).withInt(1).withInt(1).withInt(1).withInt(1).withInt(1);
         Game game = new Game(console, new Dice(new Random()));
         game.player = new Player("Hero", console);
         game.player.questProgress(QuestBook.WOLVES_AT_THE_DOOR.id()).state = QuestProgress.State.ACTIVE;
@@ -48,7 +50,8 @@ class QuestTest {
 
     @Test
     void turningInQuestGrantsReward() {
-        ScriptedConsole console = new ScriptedConsole().withInt(1);
+        ScriptedConsole console = new ScriptedConsole()
+                .withInt(1).withInt(1).withInt(1).withInt(1).withInt(1).withInt(1);
         Game game = new Game(console, new Dice(new Random()));
         game.player = new Player("Hero", console);
         int startingGold = game.player.gold;

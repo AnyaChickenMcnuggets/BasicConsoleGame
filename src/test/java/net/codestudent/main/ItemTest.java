@@ -6,41 +6,44 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class ItemTest {
 
+    // Deterministic chargen: always pick the first remaining ability at each assignment step,
+    // giving STR 15 (+2), DEX 14 (+2), CON 13 (+1), INT 12 (+1), WIS 10 (+0), CHA 8 (-1).
+    // Then pick Might (1) at tier 0.
+    private static ScriptedConsole newHeroConsole() {
+        return new ScriptedConsole().withInt(1).withInt(1).withInt(1).withInt(1).withInt(1).withInt(1);
+    }
+
     @Test
     void startingEquipmentSetsBaseStats() {
-        ScriptedConsole console = new ScriptedConsole().withInt(1); // pick Might at tier 0
-        Player player = new Player("Hero", console);
+        Player player = new Player("Hero", newHeroConsole());
 
-        assertEquals(11, player.armorClass()); // 10 base + 1 leather jerkin
-        assertEquals(0, player.attackBonus()); // rusted shortsword has no bonus
-        assertEquals(new DiceExpr(1, 6, 0), player.damageDice());
+        assertEquals(13, player.armorClass()); // 10 base + 2 DEX + 1 leather jerkin
+        assertEquals(4, player.attackBonus()); // 2 STR + 2 proficiency + 0 weapon
+        assertEquals(new DiceExpr(1, 6, 2), player.damageDice()); // 1d6 + 2 STR
     }
 
     @Test
     void equippingWeaponChangesAttackBonusAndDamage() {
-        ScriptedConsole console = new ScriptedConsole().withInt(1);
-        Player player = new Player("Hero", console);
+        Player player = new Player("Hero", newHeroConsole());
 
         player.equip(ItemCatalog.STEEL_LONGSWORD);
 
-        assertEquals(1, player.attackBonus());
-        assertEquals(new DiceExpr(1, 8, 0), player.damageDice());
+        assertEquals(5, player.attackBonus()); // 2 STR + 2 proficiency + 1 weapon
+        assertEquals(new DiceExpr(1, 8, 2), player.damageDice()); // 1d8 + 2 STR
     }
 
     @Test
     void equippingArmorChangesArmorClass() {
-        ScriptedConsole console = new ScriptedConsole().withInt(1);
-        Player player = new Player("Hero", console);
+        Player player = new Player("Hero", newHeroConsole());
 
         player.equip(ItemCatalog.CHAINMAIL_VEST);
 
-        assertEquals(13, player.armorClass()); // 10 base + 3 chainmail
+        assertEquals(15, player.armorClass()); // 10 base + 2 DEX + 3 chainmail
     }
 
     @Test
     void unequippedGearGoesBackToInventory() {
-        ScriptedConsole console = new ScriptedConsole().withInt(1);
-        Player player = new Player("Hero", console);
+        Player player = new Player("Hero", newHeroConsole());
 
         player.equip(ItemCatalog.STEEL_LONGSWORD);
 
@@ -50,14 +53,13 @@ class ItemTest {
 
     @Test
     void consumableHealsAndIsRemovedFromInventory() {
-        ScriptedConsole console = new ScriptedConsole().withInt(1);
-        Player player = new Player("Hero", console);
+        Player player = new Player("Hero", newHeroConsole());
         player.hp = 5;
         player.addItem(ItemCatalog.MINOR_HEALING_POTION);
 
         player.useConsumable(ItemCatalog.MINOR_HEALING_POTION);
 
-        assertEquals(15, player.hp); // 5 + 10 heal
+        assertEquals(player.maxHp, player.hp); // 5 + 10 heal, capped at maxHp (13: 12 + 1 CON)
         assertEquals(0, player.inventory.size());
     }
 }

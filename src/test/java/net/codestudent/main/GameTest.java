@@ -13,7 +13,9 @@ public class GameTest {
 
     @Test
     void checkLevelUpAdvancesLevelAndGrantsATalent() {
-        ScriptedConsole console = new ScriptedConsole().withInt(1); // Might at tier 0
+        ScriptedConsole console = new ScriptedConsole()
+                .withInt(1).withInt(1).withInt(1).withInt(1).withInt(1) // ability score assignment
+                .withInt(1); // Might at tier 0
         Game game = new Game(console, new Dice(new Random()));
         game.player = new Player("Hero", console);
         game.player.xp = game.player.maxXP; // 20
@@ -30,7 +32,9 @@ public class GameTest {
 
     @Test
     void checkLevelUpDoesNothingBelowThreshold() {
-        ScriptedConsole console = new ScriptedConsole().withInt(2); // Guard at tier 0
+        ScriptedConsole console = new ScriptedConsole()
+                .withInt(1).withInt(1).withInt(1).withInt(1).withInt(1) // ability score assignment
+                .withInt(2); // Guard at tier 0
         Game game = new Game(console, new Dice(new Random()));
         game.player = new Player("Hero", console);
         // xp stays at 0, well below maxXP
@@ -46,6 +50,7 @@ public class GameTest {
         ScriptedConsole console = new ScriptedConsole()
                 .withLine("TestHero")
                 .withInt(1)  // confirm name
+                .withInt(1).withInt(1).withInt(1).withInt(1).withInt(1) // ability score assignment
                 .withInt(1)  // pick Might at tier 0
                 .withInt(5); // quit at main menu
         Game game = new Game(console, new Dice(new Random()), tempDir.resolve("save.properties"));

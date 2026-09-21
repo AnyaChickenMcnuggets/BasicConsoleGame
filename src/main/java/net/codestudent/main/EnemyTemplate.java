@@ -1,5 +1,7 @@
 package net.codestudent.main;
 
+import java.util.List;
+
 public record EnemyTemplate(
     String id,
     String name,
@@ -9,5 +11,6 @@ public record EnemyTemplate(
     int attackBonus,
     DiceExpr damageDice,
     int xpReward,
-    DiceExpr goldDice
+    DiceExpr goldDice,
+    List<LootEntry> lootTable
 ) {}

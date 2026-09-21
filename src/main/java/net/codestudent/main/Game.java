@@ -281,9 +281,21 @@ public class Game {
             player.restsLeft++;
             console.print("You find a moment to catch your breath.");
         }
+        for (Item item : rollLoot(enemy.template)) {
+            player.addItem(item);
+            console.print("You find " + item.name() + ".");
+        }
         console.waitForContinue();
         registerKill(enemy.template.id());
         checkLevelUp();
+    }
+
+    List<Item> rollLoot(EnemyTemplate template) {
+        List<Item> drops = new ArrayList<>();
+        for (LootEntry entry : template.lootTable())
+            if (dice.roll(100) <= entry.percentChance())
+                drops.add(entry.item());
+        return drops;
     }
 
     void registerKill(String enemyTemplateId) {
@@ -315,6 +327,9 @@ public class Game {
         console.print("XP: " + player.xp + "/" + player.maxXP);
         console.separator(20);
         console.print("Armor Class: " + player.armorClass() + "\tAttack Bonus: +" + player.attackBonus());
+        console.separator(20);
+        console.print("STR " + player.str + "  DEX " + player.dex + "  CON " + player.con +
+            "  INT " + player.intel + "  WIS " + player.wis + "  CHA " + player.cha);
         console.separator(20);
         console.print("Weapon: " + (player.equippedWeapon != null ? player.equippedWeapon.name() : "none"));
         console.print("Armor: " + (player.equippedArmor != null ? player.equippedArmor.name() : "none"));
@@ -431,11 +446,15 @@ public class Game {
                 console.print("(" + (i + 1) + ") " + entry.item().name() + " - " + entry.price() + " gold");
                 console.print("      " + entry.item().description());
             }
-            int leaveOption = entries.size() + 1;
+            int sellOption = entries.size() + 1;
+            int leaveOption = entries.size() + 2;
+            console.print("(" + sellOption + ") Sell an item");
             console.print("(" + leaveOption + ") Leave");
             int input = console.askInt("-> ", leaveOption);
             if (input == leaveOption) {
                 shopping = false;
+            } else if (input == sellOption) {
+                sellMenu();
             } else {
                 ShopEntry entry = entries.get(input - 1);
                 console.clear();
@@ -458,6 +477,40 @@ public class Game {
                 console.waitForContinue();
             }
         }
+    }
+
+    private void sellMenu() {
+        if (player.inventory.isEmpty()) {
+            console.clear();
+            console.heading("You have nothing to sell.");
+            console.waitForContinue();
+            return;
+        }
+        console.clear();
+        console.heading("Sell which item?");
+        console.print("Gold: " + player.gold);
+        console.separator(20);
+        List<Item> items = player.inventory;
+        for (int i = 0; i < items.size(); i++) {
+            Item item = items.get(i);
+            console.print("(" + (i + 1) + ") " + item.name() + " - sells for " + sellPriceOf(item) + " gold");
+        }
+        int cancelOption = items.size() + 1;
+        console.print("(" + cancelOption + ") Cancel");
+        int input = console.askInt("-> ", cancelOption);
+        if (input == cancelOption)
+            return;
+        Item chosen = items.get(input - 1);
+        int sellPrice = sellPriceOf(chosen);
+        player.inventory.remove(chosen);
+        player.gold += sellPrice;
+        console.clear();
+        console.heading("You sell the " + chosen.name() + " for " + sellPrice + " gold.");
+        console.waitForContinue();
+    }
+
+    private int sellPriceOf(Item item) {
+        return (int) Math.ceil(item.value() * 0.5);
     }
 
     private void climax() {

@@ -7,7 +7,13 @@ import java.util.Map;
 
 public class Player extends Character {
 
+    private static final int[] STANDARD_ARRAY = {15, 14, 13, 12, 10, 8};
+    private static final List<String> ABILITY_NAMES =
+        List.of("Strength", "Dexterity", "Constitution", "Intelligence", "Wisdom", "Charisma");
+    private static final int PROFICIENCY_BONUS = 2;
+
     public int lvl, maxXP, gold, restsLeft;
+    public int str, dex, con, intel, wis, cha;
     public SkillNode.Branch branch;
     public int skillTier = -1;
     public List<SkillNode> unlockedSkills = new ArrayList<>();
@@ -25,7 +31,7 @@ public class Player extends Character {
     }
 
     private Player(String name, Console console, boolean blank) {
-        super(name, 20, 0);
+        super(name, 1, 0);
         this.console = console;
         this.lvl = 1;
         this.gold = 15;
@@ -33,17 +39,27 @@ public class Player extends Character {
         this.restsLeft = 1;
         this.equippedWeapon = ItemCatalog.RUSTED_SHORTSWORD;
         this.equippedArmor = ItemCatalog.LEATHER_JERKIN;
-        if (!blank)
+        if (!blank) {
+            assignAbilityScores();
             chooseSkill(0);
+        }
     }
 
     static Player blank(String name, Console console) {
         return new Player(name, console, true);
     }
 
+    static int modifier(int score) {
+        return Math.floorDiv(score - 10, 2);
+    }
+
+    private static String formatModifier(int mod) {
+        return mod >= 0 ? "+" + mod : String.valueOf(mod);
+    }
+
     @Override
     public int armorClass() {
-        int total = 10;
+        int total = 10 + modifier(dex);
         if (equippedArmor != null)
             total += equippedArmor.armorClassBonus();
         for (SkillNode node : unlockedSkills)
@@ -54,7 +70,7 @@ public class Player extends Character {
     @Override
     public int attackBonus() {
         Weapon weapon = equippedWeapon != null ? equippedWeapon : ItemCatalog.UNARMED;
-        int total = weapon.attackBonus();
+        int total = modifier(str) + PROFICIENCY_BONUS + weapon.attackBonus();
         for (SkillNode node : unlockedSkills)
             total += node.attackBonusDelta();
         return total;
@@ -63,20 +79,64 @@ public class Player extends Character {
     @Override
     public DiceExpr damageDice() {
         Weapon weapon = equippedWeapon != null ? equippedWeapon : ItemCatalog.UNARMED;
-        int bonusDamage = 0;
+        int bonusDamage = modifier(str);
         for (SkillNode node : unlockedSkills)
             bonusDamage += node.bonusDamageDelta();
         DiceExpr base = weapon.damageDice();
         return new DiceExpr(base.count(), base.sides(), base.modifier() + bonusDamage);
     }
 
+    private void assignAbilityScores() {
+        console.clear();
+        console.heading("Assign your ability scores");
+        console.print("Standard array: 15, 14, 13, 12, 10, 8. Assign each value to an ability.");
+        console.waitForContinue();
+
+        List<String> remaining = new ArrayList<>(ABILITY_NAMES);
+        Map<String, Integer> scores = new HashMap<>();
+        for (int value : STANDARD_ARRAY) {
+            if (remaining.size() == 1) {
+                scores.put(remaining.remove(0), value);
+                continue;
+            }
+            console.clear();
+            console.heading("Assign " + value + " to which ability?");
+            for (int i = 0; i < remaining.size(); i++)
+                console.print("(" + (i + 1) + ") " + remaining.get(i));
+            int input = console.askInt("-> ", remaining.size());
+            scores.put(remaining.remove(input - 1), value);
+        }
+
+        str = scores.get("Strength");
+        dex = scores.get("Dexterity");
+        con = scores.get("Constitution");
+        intel = scores.get("Intelligence");
+        wis = scores.get("Wisdom");
+        cha = scores.get("Charisma");
+
+        maxHp = 12 + modifier(con);
+        hp = maxHp;
+
+        console.clear();
+        console.heading("Your abilities");
+        console.print("Strength: " + str + " (" + formatModifier(modifier(str)) + ")");
+        console.print("Dexterity: " + dex + " (" + formatModifier(modifier(dex)) + ")");
+        console.print("Constitution: " + con + " (" + formatModifier(modifier(con)) + ")");
+        console.print("Intelligence: " + intel + " (" + formatModifier(modifier(intel)) + ")");
+        console.print("Wisdom: " + wis + " (" + formatModifier(modifier(wis)) + ")");
+        console.print("Charisma: " + cha + " (" + formatModifier(modifier(cha)) + ")");
+        console.waitForContinue();
+    }
+
     public void lvlUP() {
+        int hpGain = 6 + modifier(con);
         console.clear();
         console.heading("Level Up!");
-        console.print("Your wounds close and your strength grows. Full health restored.");
+        console.print("Your wounds close and your strength grows. Max HP +" + hpGain + ". Full health restored.");
         console.waitForContinue();
         maxXP += 10;
         lvl += 1;
+        maxHp += hpGain;
         hp = maxHp;
         if (skillTier < 3)
             chooseSkill(skillTier + 1);

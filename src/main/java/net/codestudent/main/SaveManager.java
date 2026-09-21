@@ -25,6 +25,12 @@ public class SaveManager {
         props.setProperty("maxXP", String.valueOf(player.maxXP));
         props.setProperty("gold", String.valueOf(player.gold));
         props.setProperty("restsLeft", String.valueOf(player.restsLeft));
+        props.setProperty("str", String.valueOf(player.str));
+        props.setProperty("dex", String.valueOf(player.dex));
+        props.setProperty("con", String.valueOf(player.con));
+        props.setProperty("intel", String.valueOf(player.intel));
+        props.setProperty("wis", String.valueOf(player.wis));
+        props.setProperty("cha", String.valueOf(player.cha));
         props.setProperty("branch", player.branch != null ? player.branch.name() : "");
         props.setProperty("skillTier", String.valueOf(player.skillTier));
         props.setProperty("unlockedSkills",
@@ -64,6 +70,12 @@ public class SaveManager {
         player.maxXP = Integer.parseInt(props.getProperty("maxXP"));
         player.gold = Integer.parseInt(props.getProperty("gold"));
         player.restsLeft = Integer.parseInt(props.getProperty("restsLeft", "1"));
+        player.str = Integer.parseInt(props.getProperty("str", "10"));
+        player.dex = Integer.parseInt(props.getProperty("dex", "10"));
+        player.con = Integer.parseInt(props.getProperty("con", "10"));
+        player.intel = Integer.parseInt(props.getProperty("intel", "10"));
+        player.wis = Integer.parseInt(props.getProperty("wis", "10"));
+        player.cha = Integer.parseInt(props.getProperty("cha", "10"));
 
         String branch = props.getProperty("branch", "");
         player.branch = branch.isEmpty() ? null : SkillNode.Branch.valueOf(branch);
